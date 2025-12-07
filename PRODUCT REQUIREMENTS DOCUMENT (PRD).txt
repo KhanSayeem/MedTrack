@@ -1,0 +1,472 @@
+PRODUCT REQUIREMENTS DOCUMENT (PRD)
+Project: MedTrack — Elderly-Friendly Medication Reminder App
+Platform: Android (Kotlin, Android Studio)
+Version: 1.0 — Offline-first (SQLite with Room), optional cloud sync future
+1. Purpose & Problem Statement
+
+Elderly individuals frequently forget to take medicines on time, struggle with managing multiple prescriptions, and may have difficulty interacting with complex interfaces.
+
+The purpose of MedTrack is to:
+
+Provide simple, reliable medication reminders.
+
+Reduce cognitive load via clean, minimal UI.
+
+Offer granular scheduling (timing, dosage, stomach condition).
+
+Allow quick confirmation (“Taken” button).
+
+Work offline, with high reliability, using SQLite as the local database.
+
+Prepare the architecture for future cloud sync / caregiver supervision.
+
+2. Target Users
+Primary Users
+
+Elderly individuals (60–90+)
+
+Those with limited smartphone literacy
+
+Users with poor vision / cognitive difficulty
+
+Secondary Users (future)
+
+Caregivers
+
+Family members
+
+Doctors/pharmacists during medication setup
+
+3. Design Principles
+
+Ultra-minimal UI
+
+High contrast
+
+Large readable typography (≥18–20sp)
+
+No clutter; only essential actions visible
+
+Predictable Interactions
+
+One primary action per screen
+
+Clear step-by-step flows
+
+No hidden gestures
+
+Accessibility-first
+
+Optional voice cues
+
+Haptic feedback for buttons
+
+Larger hit targets (≥48dp)
+
+Elder-Friendly Visual Language
+
+Use icons with words (never icons alone)
+
+Simple color palette
+
+Plenty of whitespace for reduced mental load
+
+4. Core Features (MVP)
+4.1 Medication Management (CRUD)
+Create Medication
+
+User can add:
+
+Medicine name
+
+Dosage (e.g., “1 tablet”, “5ml”)
+
+Time(s) of day (multiple allowed)
+
+Whether it must be taken:
+
+Before food
+
+After food
+
+With food
+
+Start date / optional end date
+
+Frequency options:
+
+Daily
+
+Every X hours
+
+Selected days (M/T/W…)
+
+Optional notes
+
+Alarm tone (default or custom)
+
+Read Medication
+
+Clean list of today’s medications only
+
+Secondary “All Medications” page (for management only)
+
+Update Medication
+
+Simple edit button
+
+All fields editable
+
+Delete Medication
+
+Confirmation dialog needed to prevent accidental deletion
+
+4.2 Reminder System
+Alarm Flow
+
+Alarm fires 10 minutes before designated time
+
+Followed by a main alarm at the exact time
+
+Persistent notification until marked “Taken”
+
+Alarm must ring regardless of:
+
+App being closed
+
+Device restart (use BOOT_COMPLETED to reschedule)
+
+Interaction
+
+Notification has:
+
+“Taken”
+
+“Snooze 5 min”
+
+“Open App”
+
+Snooze
+
+Optional; repeats once
+
+Encourages adherence while not overwhelming the user
+
+4.3 Medication Intake Confirmation
+
+On alarm or app home screen:
+
+Large “Taken” button
+
+Secondary small “Skip” button (optional)
+
+Once taken:
+
+Entry for the day becomes disabled
+
+App logs intake into history
+
+UI shows checkmark + faded color
+
+4.4 Daily Overview Screen (Home Screen)
+
+This is the MOST IMPORTANT screen for elderly users.
+
+Requirements:
+
+Shows only today’s medicines
+
+Sorted by upcoming time
+
+Clear color-coded statuses:
+
+Green → Taken
+
+Yellow → Due soon (within 10–15 min)
+
+Red → Missed
+
+Blue → Scheduled for later
+
+Elements:
+
+Time (“8:00 AM”)
+
+Medicine name (“Metformin”)
+
+Dosage (“1 tablet after food”)
+
+Large “Taken” button if not taken
+
+Greyed-out display once taken
+
+Additional Feature:
+
+Voice cue option (“It’s time to take your Metformin”)
+
+4.5 Medication History (Log)
+
+Simple chronological list
+
+Shows:
+
+Date
+
+Medicine
+
+Time scheduled
+
+Time taken (if applicable)
+
+Useful for doctors or caregivers
+
+5. Non-MVP but Recommended Features (Optional for v1)
+5.1 Backup/Restore (Local Export)
+
+Export DB to file
+
+Simple local backup
+
+Prepares for cloud sync later
+
+5.2 Health Profile
+
+Name, age, allergies
+
+Useful when syncing with caregivers later
+
+5.3 Low Battery Warning
+
+If battery < 20%, display a reminder:
+“Low battery may delay medication alarms.”
+
+6. Technical Requirements
+6.1 Architecture
+
+MVVM (Model-View-ViewModel)
+
+Repository pattern
+
+Single source of truth: SQLite (Room)
+
+Use WorkManager for scheduling background sync tasks
+
+Use AlarmManager for reliable alarms
+
+6.2 Database Schema (Room)
+Table: medications
+id: UUID
+name: TEXT
+dosage: TEXT
+stomach_condition: TEXT
+start_date: DATE
+end_date: DATE (nullable)
+frequency_type: TEXT (daily, hourly, selected_days)
+frequency_value: INTEGER (for every-X-hours)
+notes: TEXT (nullable)
+created_at: TIMESTAMP
+updated_at: TIMESTAMP
+
+Table: medication_times
+
+(each medicine can have multiple times)
+
+id: UUID
+medication_id: UUID (FK)
+time_of_day: TEXT ("08:00")
+
+Table: intake_logs
+id: UUID
+medication_id: UUID
+scheduled_time: TIMESTAMP
+taken_time: TIMESTAMP (nullable)
+status: TEXT (MISSED, TAKEN, SKIPPED)
+created_at: TIMESTAMP
+
+Future-proofing for sync
+
+Add these optional fields (not active yet):
+
+remote_id: TEXT (nullable)
+is_synced: BOOLEAN
+
+6.3 Alarms & Scheduling Logic
+Alarm Scheduling Rules:
+
+On app startup → initialize all alarms
+
+On new medicine added → schedule
+
+On edit → reschedule
+
+On delete → cancel alarms
+
+Alarm Triggers:
+
+10 min before → notification
+
+Exact time → full alarm
+
+Exact-time delivery:
+
+Use AlarmManager.setExactAndAllowWhileIdle()
+
+6.4 Accessibility Requirements
+
+Text size minimum 18sp
+
+High-contrast mode toggle
+
+Voice announcements optional
+
+Haptic feedback required for buttons
+
+Touch target minimum 48dp
+
+Multi-language support (English first)
+
+7. User Flows
+7.1 Add Medication Flow
+
+Tap “Add Medicine”
+
+Input name → dosage → stomach condition
+
+Choose schedule type
+
+Select time(s)
+
+Save
+
+App schedules alarms & shows success popup
+
+7.2 Reminder Flow
+
+Notification arrives (pre-alarm 10 min)
+
+Alarm rings at exact time
+
+User opens → sees large “TAKEN” button
+
+On press:
+
+Log intake
+
+Disable display for the day
+
+Stop alarm
+
+7.3 Missed Dose Flow
+
+If a dose is not marked taken after X minutes (configurable):
+
+Mark as missed
+
+Log into intake history
+
+Show red highlight on home screen
+
+8. UI/UX Specifications (High-Level)
+Color Palette
+
+Background: off-white (#F8F8F8)
+
+Primary accent: calm blue (#407BFF)
+
+Success: green (#3CB371)
+
+Warning: yellow (#FFD966)
+
+Alert: red (#FF6B6B)
+
+Typography
+
+Primary: Google Sans or Roboto
+
+Header size: 24sp
+
+Body size: 18sp
+
+Button label: 20sp, bold
+
+Layout Philosophy
+
+Plenty of whitespace
+
+Big margins
+
+One focal element per screen
+
+No more than two primary actions available at once
+
+Example Screen Summaries:
+Home Screen
+
+“Good Morning, It’s Thursday”
+
+List of today’s meds
+
+Large buttons
+
+Add Medicine Screen
+
+Step-by-step wizard
+
+No long forms
+
+9. Edge Cases & Error Handling
+Edge Case List:
+
+Device restarted → alarms must reload
+
+Timezone change → recalculate schedules
+
+End date reached → medication automatically archived
+
+User sets overlapping times → allowed, but show warning
+
+User disables notifications → warn “Alarms won’t function properly”
+
+10. Future Enhancements (Design for Expandability)
+Cloud Sync (Supabase)
+
+Enable later without rewriting database layer:
+
+Sync medication table
+
+Sync logs
+
+Real-time updates for caregiver actions
+
+Caregiver Portal
+
+Web dashboard with intake history
+
+Live alerts (“dose missed”)
+
+Smart Features
+
+AI-based adherence insights
+
+Pill recognition via camera
+
+Automatic refill reminders
+
+11. Success Metrics
+Functional Metrics
+
+95% successful alarm deliveries
+
+80+% medication confirmations recorded
+
+UX Metrics
+
+User completes “Add Medicine” flow in < 1 minute
+
+Zero drop-off due to confusing navigation
+
+Reliability Metrics
+
+Alarms function in 100% offline scenarios
+
+No crashes during reminder operation

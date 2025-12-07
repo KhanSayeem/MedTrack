@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "89551611257",
+    "project_id": "murphys-auth",
+    "storage_bucket": "murphys-auth.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:89551611257:android:77d5e6a0ef69e4b9c03ba8",
+        "android_client_info": {
+          "package_name": "com.example.authentication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtMe-rzNRcplFBzkF-6yoQVVASHURQqjQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

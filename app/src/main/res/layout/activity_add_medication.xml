@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@color/off_white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_medicine"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
+
+        <EditText
+            android:id="@+id/input_name"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="16dp"
+            android:hint="@string/medicine_name"
+            android:background="@android:color/white"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="@color/text_subtle"
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/input_dosage"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="12dp"
+            android:hint="@string/dosage"
+            android:background="@android:color/white"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="@color/text_subtle"
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/input_stomach"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="12dp"
+            android:hint="@string/stomach_condition"
+            android:background="@android:color/white"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="@color/text_subtle"
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/input_start_date"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="12dp"
+            android:hint="@string/start_date"
+            android:background="@android:color/white"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="@color/text_subtle"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none"
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/input_end_date"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="12dp"
+            android:hint="@string/end_date"
+            android:background="@android:color/white"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="@color/text_subtle"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none"
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/input_frequency"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="12dp"
+            android:hint="@string/frequency"
+            android:background="@android:color/white"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="@color/text_subtle"
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/input_frequency_value"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="12dp"
+            android:hint="@string/every_hours"
+            android:background="@android:color/white"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="@color/text_subtle"
+            android:textSize="18sp"
+            android:inputType="number" />
+
+        <EditText
+            android:id="@+id/input_selected_days"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="12dp"
+            android:hint="@string/selected_days"
+            android:background="@android:color/white"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="@color/text_subtle"
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/input_times"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="12dp"
+            android:hint="@string/times_of_day"
+            android:background="@android:color/white"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="@color/text_subtle"
+            android:textSize="18sp"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none" />
+
+        <EditText
+            android:id="@+id/input_notes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="@string/notes"
+            android:minHeight="100dp"
+            android:background="@android:color/white"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="@color/text_subtle"
+            android:textSize="18sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/button_save"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:text="@string/save"
+                android:textSize="18sp"
+                android:backgroundTint="@color/primary_blue"
+                android:textColor="@android:color/white" />
+
+            <Space
+                android:layout_width="12dp"
+                android:layout_height="1dp" />
+
+            <Button
+                android:id="@+id/button_cancel"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:text="@string/cancel"
+                android:textSize="18sp"
+                android:backgroundTint="@color/status_red"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
