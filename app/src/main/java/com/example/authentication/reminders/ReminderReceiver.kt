@@ -90,6 +90,8 @@ class ReminderReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             provideIntakeLogRepository(context).recordIntake(
                 medicationId = data.medicationId,
+                medicationName = data.medicationName,
+                dosage = data.dosage,
                 scheduledTimeMillis = data.scheduledTimeMillis,
                 takenTimeMillis = System.currentTimeMillis(),
                 status = IntakeStatus.TAKEN
@@ -115,6 +117,8 @@ class ReminderReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             provideIntakeLogRepository(context).recordIntake(
                 medicationId = data.medicationId,
+                medicationName = data.medicationName,
+                dosage = data.dosage,
                 scheduledTimeMillis = data.scheduledTimeMillis,
                 takenTimeMillis = null,
                 status = IntakeStatus.SNOOZED
@@ -139,6 +143,8 @@ class ReminderReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             provideIntakeLogRepository(context).recordIntake(
                 medicationId = data.medicationId,
+                medicationName = data.medicationName,
+                dosage = data.dosage,
                 scheduledTimeMillis = data.scheduledTimeMillis,
                 takenTimeMillis = null,
                 status = IntakeStatus.SCHEDULED

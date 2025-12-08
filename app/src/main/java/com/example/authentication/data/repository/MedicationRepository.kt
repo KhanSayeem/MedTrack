@@ -7,6 +7,7 @@ import com.example.authentication.data.local.entity.MedicationTimeEntity
 import com.example.authentication.data.local.model.MedicationWithTimes
 import com.example.authentication.domain.model.MedicationDraft
 import kotlinx.coroutines.flow.Flow
+import java.util.Calendar
 import java.util.UUID
 
 class MedicationRepository(
@@ -54,9 +55,18 @@ class MedicationRepository(
     }
 
     suspend fun deleteMedication(id: String) {
+        // We archive instead of deleting to preserve intake history.
+        endMedication(id)
+    }
+
+    suspend fun endMedication(id: String) {
         database.withTransaction {
-            medicationTimeDao.deleteByMedicationId(id)
-            medicationDao.deleteById(id)
+            val existing = medicationDao.getById(id) ?: return@withTransaction
+            val ended = existing.copy(
+                endDate = pastEndDate(),
+                updatedAt = System.currentTimeMillis()
+            )
+            medicationDao.upsert(ended)
         }
     }
 
@@ -76,5 +86,16 @@ class MedicationRepository(
             selectedDays = selectedDaysValue,
             updatedAt = System.currentTimeMillis()
         )
+    }
+
+    private fun pastEndDate(): Long {
+        val cal = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            add(Calendar.DAY_OF_YEAR, -1)
+        }
+        return cal.timeInMillis
     }
 }

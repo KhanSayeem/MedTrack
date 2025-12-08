@@ -23,6 +23,9 @@ interface IntakeLogDao {
     @Query("SELECT * FROM intake_logs WHERE scheduled_time BETWEEN :startMillis AND :endMillis ORDER BY scheduled_time DESC")
     fun observeBetween(startMillis: Long, endMillis: Long): Flow<List<IntakeLogEntity>>
 
+    @Query("SELECT * FROM intake_logs ORDER BY scheduled_time DESC")
+    fun observeAll(): Flow<List<IntakeLogEntity>>
+
     @Query("SELECT * FROM intake_logs WHERE id = :id LIMIT 1")
     suspend fun getById(id: String): IntakeLogEntity?
 

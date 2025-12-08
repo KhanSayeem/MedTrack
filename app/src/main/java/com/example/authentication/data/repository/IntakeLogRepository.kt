@@ -15,11 +15,15 @@ class IntakeLogRepository(
     fun observeLogsBetween(startMillis: Long, endMillis: Long): Flow<List<IntakeLogEntity>> =
         intakeLogDao.observeBetween(startMillis, endMillis)
 
+    fun observeAllLogs(): Flow<List<IntakeLogEntity>> = intakeLogDao.observeAll()
+
     fun observeLogsForMedication(medicationId: String): Flow<List<IntakeLogEntity>> =
         intakeLogDao.observeForMedication(medicationId)
 
     suspend fun recordIntake(
         medicationId: String,
+        medicationName: String? = null,
+        dosage: String? = null,
         scheduledTimeMillis: Long,
         takenTimeMillis: Long?,
         status: IntakeStatus
@@ -29,8 +33,10 @@ class IntakeLogRepository(
         val log = IntakeLogEntity(
             id = id,
             medicationId = medicationId,
+            medicationName = medicationName ?: existing?.medicationName,
+            dosage = dosage ?: existing?.dosage,
             scheduledTime = scheduledTimeMillis,
-            takenTime = takenTimeMillis,
+            takenTime = takenTimeMillis ?: existing?.takenTime,
             status = status.name
         )
         intakeLogDao.upsert(log)

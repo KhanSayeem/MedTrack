@@ -55,6 +55,8 @@ class HomeViewModel(
         viewModelScope.launch {
             intakeLogRepository.recordIntake(
                 medicationId = item.medicationId,
+                medicationName = item.name,
+                dosage = item.dosage,
                 scheduledTimeMillis = item.scheduledTimeMillis,
                 takenTimeMillis = System.currentTimeMillis(),
                 status = IntakeStatus.TAKEN
@@ -68,8 +70,7 @@ class HomeViewModel(
             medicationWithTimes?.times?.forEach { time ->
                 reminderScheduler.cancelReminder(item.medicationId, time.timeOfDay)
             }
-            intakeLogRepository.clearForMedication(item.medicationId)
-            medicationRepository.deleteMedication(item.medicationId)
+            medicationRepository.endMedication(item.medicationId)
         }
     }
 

@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import java.util.Calendar
 
 class HistoryViewModel(
     private val intakeLogRepository: IntakeLogRepository
@@ -20,14 +19,7 @@ class HistoryViewModel(
     val logs: StateFlow<List<IntakeLogEntity>> = _logs.asStateFlow()
 
     init {
-        val cal = Calendar.getInstance()
-        cal.set(Calendar.HOUR_OF_DAY, 0)
-        cal.set(Calendar.MINUTE, 0)
-        cal.set(Calendar.SECOND, 0)
-        cal.set(Calendar.MILLISECOND, 0)
-        val start = cal.timeInMillis - 7L * 24 * 60 * 60 * 1000 // past week
-        val end = System.currentTimeMillis()
-        intakeLogRepository.observeLogsBetween(start, end)
+        intakeLogRepository.observeAllLogs()
             .onEach { _logs.value = it }
             .launchIn(viewModelScope)
     }

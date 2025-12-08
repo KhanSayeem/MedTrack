@@ -39,7 +39,9 @@ class HistoryAdapter(
         fun bind(item: IntakeLogEntity) {
             val scheduled = dateFormat.format(Date(item.scheduledTime))
             binding.textHistoryDate.text = scheduled
-            binding.textHistoryMed.text = "Medicine ID: ${item.medicationId}"
+            val medLabel = item.medicationName?.takeIf { it.isNotBlank() } ?: "Medicine ID: ${item.medicationId}"
+            val dosage = item.dosage?.takeIf { it.isNotBlank() }
+            binding.textHistoryMed.text = dosage?.let { "$medLabel • $it" } ?: medLabel
             val statusText = item.status + (item.takenTime?.let { " at ${dateFormat.format(Date(it))}" } ?: "")
             binding.textHistoryStatus.text = statusText
         }
