@@ -27,7 +27,8 @@ import kotlin.math.max
 
 class HomeViewModel(
     private val medicationRepository: MedicationRepository,
-    private val intakeLogRepository: IntakeLogRepository
+    private val intakeLogRepository: IntakeLogRepository,
+    private val patientId: String
 ) : ViewModel() {
 
     private val _medications = MutableStateFlow<List<HomeMedicationItem>>(emptyList())
@@ -39,9 +40,9 @@ class HomeViewModel(
     init {
         startMidnightTicker()
         combine(
-            medicationRepository.observeMedications(),
+            medicationRepository.observeMedicationsForPatient(patientId),
             todayRangeFlow.flatMapLatest { range ->
-                intakeLogRepository.observeLogsBetween(range.first, range.second)
+                intakeLogRepository.observeLogsBetween(range.first, range.second, patientId)
             },
             todayRangeFlow
         ) { meds, logs, range ->
@@ -54,6 +55,7 @@ class HomeViewModel(
     fun markTaken(item: HomeMedicationItem) {
         viewModelScope.launch {
             intakeLogRepository.recordIntake(
+                patientId = patientId,
                 medicationId = item.medicationId,
                 medicationName = item.name,
                 dosage = item.dosage,
@@ -271,12 +273,13 @@ class HomeViewModel(
 
     class Factory(
         private val medicationRepository: MedicationRepository,
-        private val intakeLogRepository: IntakeLogRepository
+        private val intakeLogRepository: IntakeLogRepository,
+        private val patientId: String
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                return HomeViewModel(medicationRepository, intakeLogRepository) as T
+                return HomeViewModel(medicationRepository, intakeLogRepository, patientId) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }

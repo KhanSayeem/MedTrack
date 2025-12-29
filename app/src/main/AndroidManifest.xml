@@ -29,6 +29,10 @@
       android:name=".SignupActivity"
       android:exported="false" />
     <activity
+      android:name=".ui.caretaker.CaretakerActivity"
+      android:exported="false"
+      android:label="@string/caretaker_dashboard_title" />
+    <activity
       android:name=".MainActivity"
       android:exported="false">
 

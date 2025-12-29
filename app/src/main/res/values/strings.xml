@@ -30,4 +30,27 @@
     <string name="action_snooze">Snooze 5 min</string>
     <string name="action_open">Open app</string>
     <string name="delete">Delete</string>
+    <string name="caretaker_dashboard_title">Caretaker dashboard</string>
+    <string name="caretaker_logged_in_as">Logged in as %1$s</string>
+    <string name="caretaker_dashboard_summary">Manage assigned patients\u2019 medications, schedules, reminders, and adherence from here.</string>
+    <string name="caretaker_privileges">Caretaker privileges:\n- Add/edit/delete meds and times for assigned patients\n- Pause/resume meds and resend reminders when doses are missed\n- Mark doses taken/missed and leave notes\n- View adherence history and recent reminders</string>
+    <string name="caretaker_next_steps">Implementation checklist:\n1) Store a patient_caretaker mapping in Firebase (patient UID \u2192 caretaker UID).\n2) Sync meds to patients/&lt;patientId&gt;/medications; patient app mirrors to Room and reschedules alarms.\n3) Expose adherence logs to caretakers (read-only) from patients/&lt;patientId&gt;/logs.</string>
+    <string name="caretaker_patients_title">Patients</string>
+    <string name="caretaker_add_patient_label">Add patient (email + UID)</string>
+    <string name="caretaker_add_patient_email_hint">Patient email</string>
+    <string name="caretaker_add_patient_uid_hint">Patient UID</string>
+    <string name="caretaker_add_patient">Add patient</string>
+    <string name="caretaker_add_patient_missing_fields">Enter patient email and UID.</string>
+    <string name="caretaker_add_patient_success">Added %1$s locally.</string>
+    <string name="caretaker_open_patient_view">Open selected patient view</string>
+    <string name="caretaker_export_patient">Export selected patient data</string>
+    <string name="caretaker_pick_import">Choose file to import</string>
+    <string name="caretaker_import_patient">Import selected file</string>
+    <string name="caretaker_import_file_label">No file selected</string>
+    <string name="caretaker_import_file_selected">Selected: %1$s</string>
+    <string name="caretaker_import_no_file">Select a file to import.</string>
+    <string name="caretaker_no_patient_selected">Select a patient first.</string>
+    <string name="caretaker_export_success">Exported to: %1$s</string>
+    <string name="caretaker_import_success">Imported %1$d medications and %2$d logs</string>
+    <string name="caretaker_import_fail">Import failed: %1$s</string>
 </resources>

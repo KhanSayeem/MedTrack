@@ -16,6 +16,7 @@ import com.example.authentication.R
 import com.example.authentication.data.local.MedTrackDatabase
 import com.example.authentication.data.repository.IntakeLogRepository
 import com.example.authentication.domain.model.IntakeStatus
+import com.example.authentication.session.UserSessionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -72,7 +73,9 @@ class ReminderReceiver : BroadcastReceiver() {
         NotificationManagerCompat.from(context).notify(data.medicationId, notificationId, builder.build())
 
         if (!data.isPreReminder) {
+            val patientId = resolvePatientId(context, data)
             ReminderScheduler(context).scheduleNextDay(
+                patientId = patientId,
                 medicationId = data.medicationId,
                 medicationName = data.medicationName,
                 dosage = data.dosage,
@@ -88,7 +91,9 @@ class ReminderReceiver : BroadcastReceiver() {
         val data = intent.toPayload() ?: return
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
+            val patientId = resolvePatientId(context, data)
             provideIntakeLogRepository(context).recordIntake(
+                patientId = patientId,
                 medicationId = data.medicationId,
                 medicationName = data.medicationName,
                 dosage = data.dosage,
@@ -98,6 +103,7 @@ class ReminderReceiver : BroadcastReceiver() {
             )
             ReminderScheduler(context).cancelReminder(data.medicationId, data.timeOfDay)
             ReminderScheduler(context).scheduleNextDay(
+                patientId = patientId,
                 medicationId = data.medicationId,
                 medicationName = data.medicationName,
                 dosage = data.dosage,
@@ -115,7 +121,9 @@ class ReminderReceiver : BroadcastReceiver() {
         val data = intent.toPayload() ?: return
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
+            val patientId = resolvePatientId(context, data)
             provideIntakeLogRepository(context).recordIntake(
+                patientId = patientId,
                 medicationId = data.medicationId,
                 medicationName = data.medicationName,
                 dosage = data.dosage,
@@ -124,6 +132,7 @@ class ReminderReceiver : BroadcastReceiver() {
                 status = IntakeStatus.SNOOZED
             )
             ReminderScheduler(context).scheduleSnooze(
+                patientId = patientId,
                 medicationId = data.medicationId,
                 medicationName = data.medicationName,
                 dosage = data.dosage,
@@ -141,7 +150,9 @@ class ReminderReceiver : BroadcastReceiver() {
         val data = intent.toPayload() ?: return
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
+            val patientId = resolvePatientId(context, data)
             provideIntakeLogRepository(context).recordIntake(
+                patientId = patientId,
                 medicationId = data.medicationId,
                 medicationName = data.medicationName,
                 dosage = data.dosage,
@@ -206,6 +217,7 @@ class ReminderReceiver : BroadcastReceiver() {
         val medicationName = getStringExtra(EXTRA_MEDICATION_NAME) ?: return null
         val dosage = getStringExtra(EXTRA_DOSAGE) ?: return null
         val timeOfDay = getStringExtra(EXTRA_TIME_OF_DAY) ?: return null
+        val patientId = getStringExtra(EXTRA_PATIENT_ID) ?: ""
         val scheduledTime = getLongExtra(EXTRA_SCHEDULED_TIME, -1L)
         val startDate = getLongExtra(EXTRA_START_DATE, -1L)
         val endDateRaw = getLongExtra(EXTRA_END_DATE, -1L)
@@ -220,11 +232,13 @@ class ReminderReceiver : BroadcastReceiver() {
             scheduledTimeMillis = scheduledTime,
             startDateMillis = startDate,
             endDateMillis = endDate,
-            isPreReminder = isPreReminder
+            isPreReminder = isPreReminder,
+            patientId = patientId
         )
     }
 
     data class ReminderPayload(
+        val patientId: String,
         val medicationId: String,
         val medicationName: String,
         val dosage: String,
@@ -235,6 +249,7 @@ class ReminderReceiver : BroadcastReceiver() {
         val isPreReminder: Boolean
     ) {
         fun toBundle() = android.os.Bundle().apply {
+            putString(EXTRA_PATIENT_ID, patientId)
             putString(EXTRA_MEDICATION_ID, medicationId)
             putString(EXTRA_MEDICATION_NAME, medicationName)
             putString(EXTRA_DOSAGE, dosage)
@@ -260,7 +275,14 @@ class ReminderReceiver : BroadcastReceiver() {
         const val EXTRA_START_DATE = "extra_start_date"
         const val EXTRA_END_DATE = "extra_end_date"
         const val EXTRA_IS_PRE_REMINDER = "extra_is_pre_reminder"
+        const val EXTRA_PATIENT_ID = "extra_patient_id"
 
         const val CHANNEL_ID = "medtrack_reminders"
+    }
+
+    private fun resolvePatientId(context: Context, payload: ReminderPayload): String {
+        return payload.patientId.ifEmpty {
+            UserSessionManager.getUid(context) ?: ""
+        }
     }
 }

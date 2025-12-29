@@ -8,6 +8,7 @@ import java.util.UUID
 @Entity(tableName = "medications")
 data class MedicationEntity(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
+    @ColumnInfo(name = "patient_id") val patientId: String,
     val name: String,
     val dosage: String,
     @ColumnInfo(name = "stomach_condition") val stomachCondition: String,

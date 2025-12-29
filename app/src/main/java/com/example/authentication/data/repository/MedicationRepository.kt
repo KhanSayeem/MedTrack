@@ -17,17 +17,22 @@ class MedicationRepository(
     private val medicationDao = database.medicationDao()
     private val medicationTimeDao = database.medicationTimeDao()
 
-    fun observeMedications(): Flow<List<MedicationWithTimes>> = medicationDao.observeAll()
+    fun observeMedicationsForPatient(patientId: String): Flow<List<MedicationWithTimes>> =
+        medicationDao.observeAllForPatient(patientId)
 
     suspend fun getMedication(id: String): MedicationWithTimes? = medicationDao.getWithTimes(id)
 
-    suspend fun createMedication(draft: MedicationDraft): String {
+    suspend fun getMedicationForPatient(id: String, patientId: String): MedicationWithTimes? =
+        medicationDao.getWithTimesForPatient(id, patientId)
+
+    suspend fun createMedication(draft: MedicationDraft, patientId: String): String {
         val medicationId = UUID.randomUUID().toString()
         database.withTransaction {
-            val medication = draft.toEntity(medicationId)
+            val medication = draft.toEntity(medicationId, patientId)
             medicationDao.upsert(medication)
             val times = draft.timesOfDay.map { time ->
                 MedicationTimeEntity(
+                    patientId = patientId,
                     medicationId = medicationId,
                     timeOfDay = time
                 )
@@ -38,13 +43,14 @@ class MedicationRepository(
         return medicationId
     }
 
-    suspend fun updateMedication(id: String, draft: MedicationDraft) {
+    suspend fun updateMedication(id: String, draft: MedicationDraft, patientId: String) {
         database.withTransaction {
             val existing = medicationDao.getById(id) ?: return@withTransaction
-            val updated = draft.toEntity(id).copy(createdAt = existing.createdAt)
+            val updated = draft.toEntity(id, patientId).copy(createdAt = existing.createdAt)
             medicationDao.upsert(updated)
             val times = draft.timesOfDay.map { time ->
                 MedicationTimeEntity(
+                    patientId = patientId,
                     medicationId = id,
                     timeOfDay = time
                 )
@@ -70,10 +76,31 @@ class MedicationRepository(
         }
     }
 
-    private fun MedicationDraft.toEntity(id: String): MedicationEntity {
+    suspend fun upsertFromRemote(patientId: String, medications: List<MedicationDraft>) {
+        database.withTransaction {
+            medicationDao.deleteByPatient(patientId)
+            medicationTimeDao.deleteByPatient(patientId)
+            medications.forEach { draft ->
+                val medId = UUID.randomUUID().toString()
+                val medication = draft.toEntity(medId, patientId)
+                medicationDao.upsert(medication)
+                val times = draft.timesOfDay.map { time ->
+                    MedicationTimeEntity(
+                        patientId = patientId,
+                        medicationId = medId,
+                        timeOfDay = time
+                    )
+                }
+                medicationTimeDao.upsertAll(times)
+            }
+        }
+    }
+
+    private fun MedicationDraft.toEntity(id: String, patientId: String): MedicationEntity {
         val selectedDaysValue = selectedDays?.takeIf { it.isNotEmpty() }?.joinToString(",")
         return MedicationEntity(
             id = id,
+            patientId = patientId,
             name = name,
             dosage = dosage,
             stomachCondition = stomachCondition,

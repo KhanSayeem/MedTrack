@@ -21,6 +21,7 @@ import java.util.UUID
 )
 data class MedicationTimeEntity(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
+    @ColumnInfo(name = "patient_id") val patientId: String,
     @ColumnInfo(name = "medication_id") val medicationId: String,
     @ColumnInfo(name = "time_of_day") val timeOfDay: String
 )

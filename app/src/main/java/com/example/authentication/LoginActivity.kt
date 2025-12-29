@@ -6,7 +6,11 @@ import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.example.authentication.MedTrackApp
 import com.example.authentication.databinding.ActivityLoginBinding
+import com.example.authentication.session.UserSessionManager
+import com.example.authentication.ui.caretaker.CaretakerActivity
 import com.google.firebase.auth.FirebaseAuth
 
 
@@ -54,10 +58,12 @@ class LoginActivity : AppCompatActivity() {
 
             firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
               if (it.isSuccessful) {
-                Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
-                finish()
+                val uid = firebaseAuth.currentUser?.uid
+                if (uid != null) {
+                  fetchUserRole(uid, email)
+                } else {
+                  Toast.makeText(this, "Could not read user ID.", Toast.LENGTH_SHORT).show()
+                }
               } else {
                 val errorMessage = it.exception?.localizedMessage ?: "Login failed. Check your credentials and try again."
                 Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
@@ -68,5 +74,26 @@ class LoginActivity : AppCompatActivity() {
           val signupIntent = Intent(this, SignupActivity::class.java)
           startActivity(signupIntent)
         }
+    }
+
+    private fun fetchUserRole(uid: String, email: String) {
+        val app = application as MedTrackApp
+        lifecycleScope.launchWhenStarted {
+            val user = app.userRepository.getUser(uid)
+            val role = user?.role ?: "patient"
+            UserSessionManager.saveUser(this@LoginActivity, uid, email, role)
+            if (role == "patient") {
+                UserSessionManager.setActivePatient(this@LoginActivity, uid)
+            } else {
+                UserSessionManager.clearActivePatient(this@LoginActivity)
+            }
+            navigateForRole(role)
+        }
+    }
+
+    private fun navigateForRole(role: String) {
+        val target = if (role == "caretaker") CaretakerActivity::class.java else MainActivity::class.java
+        startActivity(Intent(this, target))
+        finish()
     }
 }

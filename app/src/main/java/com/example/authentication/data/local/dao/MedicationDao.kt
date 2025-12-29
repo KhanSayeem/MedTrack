@@ -27,6 +27,10 @@ interface MedicationDao {
     @Query("SELECT * FROM medications ORDER BY start_date ASC")
     fun observeAll(): Flow<List<MedicationWithTimes>>
 
+    @Transaction
+    @Query("SELECT * FROM medications WHERE patient_id = :patientId ORDER BY start_date ASC")
+    fun observeAllForPatient(patientId: String): Flow<List<MedicationWithTimes>>
+
     @Query("SELECT * FROM medications WHERE id = :id LIMIT 1")
     suspend fun getById(id: String): MedicationEntity?
 
@@ -35,9 +39,20 @@ interface MedicationDao {
     suspend fun getWithTimes(id: String): MedicationWithTimes?
 
     @Transaction
+    @Query("SELECT * FROM medications WHERE id = :id AND patient_id = :patientId")
+    suspend fun getWithTimesForPatient(id: String, patientId: String): MedicationWithTimes?
+
+    @Transaction
     @Query("SELECT * FROM medications")
     suspend fun getAllWithTimes(): List<MedicationWithTimes>
 
+    @Transaction
+    @Query("SELECT * FROM medications WHERE patient_id = :patientId")
+    suspend fun getAllWithTimesForPatient(patientId: String): List<MedicationWithTimes>
+
     @Query("DELETE FROM medications WHERE id = :id")
     suspend fun deleteById(id: String)
+
+    @Query("DELETE FROM medications WHERE patient_id = :patientId")
+    suspend fun deleteByPatient(patientId: String)
 }

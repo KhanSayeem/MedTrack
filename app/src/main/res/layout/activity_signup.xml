@@ -63,6 +63,33 @@
           android:textColorHint="@color/text_subtle"
           android:textColor="@color/grey" />
 
+        <RadioGroup
+            android:id="@+id/role_radio_group"
+            android:layout_width="350dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <RadioButton
+                android:id="@+id/radio_patient"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="20dp"
+                android:checked="true"
+                android:text="Patient"
+                android:textColor="@color/grey"
+                android:textSize="16sp" />
+
+            <RadioButton
+                android:id="@+id/radio_caretaker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Caretaker"
+                android:textColor="@color/grey"
+                android:textSize="16sp" />
+        </RadioGroup>
+
         <Button
           android:id="@+id/signup_btn"
           android:layout_width="350dp"

@@ -12,15 +12,16 @@ class IntakeLogRepository(
 
     private val intakeLogDao = database.intakeLogDao()
 
-    fun observeLogsBetween(startMillis: Long, endMillis: Long): Flow<List<IntakeLogEntity>> =
-        intakeLogDao.observeBetween(startMillis, endMillis)
+    fun observeLogsBetween(startMillis: Long, endMillis: Long, patientId: String): Flow<List<IntakeLogEntity>> =
+        intakeLogDao.observeBetweenForPatient(startMillis, endMillis, patientId)
 
-    fun observeAllLogs(): Flow<List<IntakeLogEntity>> = intakeLogDao.observeAll()
+    fun observeAllLogs(patientId: String): Flow<List<IntakeLogEntity>> = intakeLogDao.observeAllForPatient(patientId)
 
-    fun observeLogsForMedication(medicationId: String): Flow<List<IntakeLogEntity>> =
-        intakeLogDao.observeForMedication(medicationId)
+    fun observeLogsForMedication(medicationId: String, patientId: String): Flow<List<IntakeLogEntity>> =
+        intakeLogDao.observeForMedicationAndPatient(medicationId, patientId)
 
     suspend fun recordIntake(
+        patientId: String,
         medicationId: String,
         medicationName: String? = null,
         dosage: String? = null,
@@ -28,10 +29,11 @@ class IntakeLogRepository(
         takenTimeMillis: Long?,
         status: IntakeStatus
     ): String {
-        val existing = intakeLogDao.getByMedicationAndTime(medicationId, scheduledTimeMillis)
+        val existing = intakeLogDao.getByMedicationAndTimeForPatient(medicationId, scheduledTimeMillis, patientId)
         val id = existing?.id ?: UUID.randomUUID().toString()
         val log = IntakeLogEntity(
             id = id,
+            patientId = patientId,
             medicationId = medicationId,
             medicationName = medicationName ?: existing?.medicationName,
             dosage = dosage ?: existing?.dosage,
@@ -46,9 +48,11 @@ class IntakeLogRepository(
     suspend fun updateStatus(
         logId: String,
         status: IntakeStatus,
-        takenTimeMillis: Long? = null
+        takenTimeMillis: Long? = null,
+        patientId: String
     ) {
         val existing = intakeLogDao.getById(logId) ?: return
+        if (existing.patientId != patientId) return
         val updated = existing.copy(
             status = status.name,
             takenTime = takenTimeMillis ?: existing.takenTime
@@ -56,7 +60,14 @@ class IntakeLogRepository(
         intakeLogDao.upsert(updated)
     }
 
-    suspend fun clearForMedication(medicationId: String) {
+    suspend fun clearForMedication(medicationId: String, patientId: String) {
         intakeLogDao.deleteByMedication(medicationId)
     }
+
+    suspend fun clearForPatient(patientId: String) {
+        intakeLogDao.deleteByPatient(patientId)
+    }
+
+    suspend fun getLogsForPatient(patientId: String): List<IntakeLogEntity> =
+        intakeLogDao.getAllForPatient(patientId)
 }

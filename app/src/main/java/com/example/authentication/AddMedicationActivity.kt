@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.authentication.databinding.ActivityAddMedicationBinding
 import com.example.authentication.domain.model.MedicationDraft
 import com.example.authentication.reminders.ReminderScheduler
+import com.example.authentication.session.UserSessionManager
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -34,8 +35,9 @@ class AddMedicationActivity : AppCompatActivity() {
         binding.buttonSave.setOnClickListener {
             val draft = buildDraft() ?: return@setOnClickListener
             val app = application as MedTrackApp
+            val patientId = UserSessionManager.getActivePatient(this) ?: UserSessionManager.getUid(this) ?: ""
             lifecycleScope.launch {
-                val medicationId = app.medicationRepository.createMedication(draft)
+                val medicationId = app.medicationRepository.createMedication(draft, patientId)
                 val medication = app.medicationRepository.getMedication(medicationId)
                 if (medication != null) {
                     ReminderScheduler(this@AddMedicationActivity).scheduleMedication(medication)

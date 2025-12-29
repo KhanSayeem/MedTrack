@@ -12,6 +12,7 @@ import java.util.UUID
 )
 data class IntakeLogEntity(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
+    @ColumnInfo(name = "patient_id") val patientId: String,
     @ColumnInfo(name = "medication_id") val medicationId: String,
     @ColumnInfo(name = "medication_name") val medicationName: String? = null,
     val dosage: String? = null,

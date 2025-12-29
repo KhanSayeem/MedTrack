@@ -6,8 +6,12 @@ import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.example.authentication.MedTrackApp
 import com.example.authentication.databinding.ActivitySignupBinding
+import com.example.authentication.session.UserSessionManager
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
 
 class SignupActivity : AppCompatActivity() {
@@ -66,17 +70,31 @@ class SignupActivity : AppCompatActivity() {
           binding.signupPassword.error = null
           binding.signupConfirm.error = null
 
-              firebaseAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener {
-                if(it.isSuccessful){
-                  Toast.makeText(this, "Account created! Please log in.", Toast.LENGTH_SHORT).show()
-                  val intent = Intent(this, LoginActivity::class.java)
-                  startActivity(intent)
-                  finish()
-                }else{
-                  val errorMessage = it.exception?.localizedMessage ?: "Signup failed. Please try again."
+          val role = if (binding.radioCaretaker.isChecked) "caretaker" else "patient"
+
+          firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+              if (task.isSuccessful) {
+                  val userId = firebaseAuth.currentUser?.uid
+                  if (userId != null) {
+                      val app = application as MedTrackApp
+                      lifecycleScope.launch {
+                          app.userRepository.upsertUser(userId, email, role)
+                          if (role == "patient") {
+                              UserSessionManager.setActivePatient(this@SignupActivity, userId)
+                          } else {
+                              UserSessionManager.clearActivePatient(this@SignupActivity)
+                          }
+                      }
+                      Toast.makeText(this, "Account created as $role! Please log in.", Toast.LENGTH_SHORT).show()
+                      val intent = Intent(this, LoginActivity::class.java)
+                      startActivity(intent)
+                      finish()
+                  }
+              } else {
+                  val errorMessage = task.exception?.localizedMessage ?: "Signup failed. Please try again."
                   Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
-                }
               }
+          }
         }
       binding.loginRedirectText.setOnClickListener {
         val loginIntent = Intent(this, LoginActivity::class.java)

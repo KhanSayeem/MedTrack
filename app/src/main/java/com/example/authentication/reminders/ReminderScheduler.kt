@@ -21,6 +21,7 @@ class ReminderScheduler(private val context: Context) {
 
     fun scheduleMedication(medication: MedicationWithTimes) {
         val med: MedicationEntity = medication.medication
+        val patientId = med.patientId
         medication.times.forEach { time ->
             val nextMainTime = computeNextTriggerMillis(
                 time.timeOfDay,
@@ -29,6 +30,7 @@ class ReminderScheduler(private val context: Context) {
             ) ?: return@forEach
 
             scheduleReminderPair(
+                patientId = patientId,
                 medicationId = med.id,
                 medicationName = med.name,
                 dosage = med.dosage,
@@ -41,6 +43,7 @@ class ReminderScheduler(private val context: Context) {
     }
 
     fun scheduleReminderPair(
+        patientId: String,
         medicationId: String,
         medicationName: String,
         dosage: String,
@@ -50,6 +53,7 @@ class ReminderScheduler(private val context: Context) {
         endDateMillis: Long?
     ) {
         val mainPendingIntent = buildReminderPendingIntent(
+            patientId = patientId,
             medicationId = medicationId,
             medicationName = medicationName,
             dosage = dosage,
@@ -65,6 +69,7 @@ class ReminderScheduler(private val context: Context) {
         val preTime = scheduledTimeMillis - PRE_REMINDER_MS
         val preTrigger = if (preTime > System.currentTimeMillis()) preTime else scheduledTimeMillis + ONE_DAY_MS - PRE_REMINDER_MS
         val prePendingIntent = buildReminderPendingIntent(
+            patientId = patientId,
             medicationId = medicationId,
             medicationName = medicationName,
             dosage = dosage,
@@ -79,6 +84,7 @@ class ReminderScheduler(private val context: Context) {
     }
 
     fun scheduleNextDay(
+        patientId: String,
         medicationId: String,
         medicationName: String,
         dosage: String,
@@ -99,6 +105,7 @@ class ReminderScheduler(private val context: Context) {
 
         if (endDateMillis != null && cal.timeInMillis > endDateMillis) return
         scheduleReminderPair(
+            patientId = patientId,
             medicationId = medicationId,
             medicationName = medicationName,
             dosage = dosage,
@@ -110,6 +117,7 @@ class ReminderScheduler(private val context: Context) {
     }
 
     fun scheduleSnooze(
+        patientId: String,
         medicationId: String,
         medicationName: String,
         dosage: String,
@@ -120,6 +128,7 @@ class ReminderScheduler(private val context: Context) {
     ) {
         val triggerAt = System.currentTimeMillis() + SNOOZE_MS
         val snoozePendingIntent = buildReminderPendingIntent(
+            patientId = patientId,
             medicationId = medicationId,
             medicationName = medicationName,
             dosage = dosage,
@@ -177,6 +186,7 @@ class ReminderScheduler(private val context: Context) {
     }
 
     private fun buildReminderPendingIntent(
+        patientId: String,
         medicationId: String,
         medicationName: String,
         dosage: String,
@@ -189,6 +199,7 @@ class ReminderScheduler(private val context: Context) {
     ): PendingIntent {
         val intent = Intent(context, ReminderReceiver::class.java).apply {
             action = ReminderReceiver.ACTION_REMINDER
+            putExtra(ReminderReceiver.EXTRA_PATIENT_ID, patientId)
             putExtra(ReminderReceiver.EXTRA_MEDICATION_ID, medicationId)
             putExtra(ReminderReceiver.EXTRA_MEDICATION_NAME, medicationName)
             putExtra(ReminderReceiver.EXTRA_DOSAGE, dosage)

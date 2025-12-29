@@ -12,6 +12,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.authentication.MedTrackApp
 import com.example.authentication.databinding.FragmentHistoryBinding
+import com.example.authentication.session.UserSessionManager
 import kotlinx.coroutines.launch
 
 class HistoryFragment : Fragment() {
@@ -23,7 +24,8 @@ class HistoryFragment : Fragment() {
 
     private val viewModel: HistoryViewModel by viewModels {
         val app = requireActivity().application as MedTrackApp
-        HistoryViewModel.Factory(app.intakeLogRepository)
+        val patientId = UserSessionManager.getActivePatient(requireContext()) ?: UserSessionManager.getUid(requireContext()) ?: ""
+        HistoryViewModel.Factory(app.intakeLogRepository, patientId)
     }
 
     override fun onCreateView(

@@ -9,23 +9,27 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.authentication.data.local.dao.IntakeLogDao
 import com.example.authentication.data.local.dao.MedicationDao
 import com.example.authentication.data.local.dao.MedicationTimeDao
+import com.example.authentication.data.local.dao.UserDao
 import com.example.authentication.data.local.entity.IntakeLogEntity
 import com.example.authentication.data.local.entity.MedicationEntity
 import com.example.authentication.data.local.entity.MedicationTimeEntity
+import com.example.authentication.data.local.entity.UserEntity
 
 @Database(
     entities = [
         MedicationEntity::class,
         MedicationTimeEntity::class,
-        IntakeLogEntity::class
+        IntakeLogEntity::class,
+        UserEntity::class
     ],
-    version = 2,
+    version = 4,
     exportSchema = true
 )
 abstract class MedTrackDatabase : RoomDatabase() {
     abstract fun medicationDao(): MedicationDao
     abstract fun medicationTimeDao(): MedicationTimeDao
     abstract fun intakeLogDao(): IntakeLogDao
+    abstract fun userDao(): UserDao
 
     companion object {
         private const val DB_NAME = "medtrack.db"
@@ -78,9 +82,31 @@ abstract class MedTrackDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE medications ADD COLUMN patient_id TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE medication_times ADD COLUMN patient_id TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE intake_logs ADD COLUMN patient_id TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS users (
+                        uid TEXT NOT NULL PRIMARY KEY,
+                        email TEXT NOT NULL,
+                        role TEXT NOT NULL
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
         fun build(context: Context): MedTrackDatabase =
             Room.databaseBuilder(context, MedTrackDatabase::class.java, DB_NAME)
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .fallbackToDestructiveMigration()
                 .build()
     }
